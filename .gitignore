@@ -1,0 +1,5 @@
+# Runtime state if the whole dir ever gets symlinked into ~/.config/herdr
+*.log
+*.sock
+*.lock
+session.json

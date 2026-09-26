@@ -1,0 +1,67 @@
+onboarding = false
+
+[ui.toast]
+delivery = "herdr"
+
+[theme]
+name = "catppuccin"
+# Follow macOS light/dark appearance (like tmux-dark-notify)
+auto_switch = true
+dark_name = "catppuccin"
+light_name = "catppuccin-latte"
+
+[keys]
+# Same prefix as tmux
+prefix = "ctrl+space"
+
+detach = "prefix+d"
+
+# Splits: j = below, l = right (tmux: split-window -v / -h)
+split_horizontal = "prefix+j"
+split_vertical = "prefix+l"
+
+# Killing pane/tab (tmux: x = kill-pane, q = kill-window)
+close_pane = "prefix+x"
+close_tab = "prefix+q"
+
+# Maximize active pane (tmux: C-h resize-pane -Z)
+zoom = "prefix+ctrl+h"
+
+# Pane focus without prefix (alt instead of ctrl to not clash with nvim)
+focus_pane_left = "alt+h"
+focus_pane_down = "alt+j"
+focus_pane_up = "alt+k"
+focus_pane_right = "alt+l"
+
+# Pane cycling (tmux: prefix C-s) and back-and-forth (tmux: prefix Tab)
+cycle_pane_next = "prefix+ctrl+s"
+last_pane = "prefix+tab"
+
+# Quick tab navigation (tmux: M-p / M-n)
+previous_tab = "alt+p"
+next_tab = "alt+n"
+
+# Pane resize (tmux: prefix H/J/K/L)
+resize_pane_left = "prefix+shift+h"
+resize_pane_down = "prefix+shift+j"
+resize_pane_up = "prefix+shift+k"
+resize_pane_right = "prefix+shift+l"
+
+# prefix+shift+g is taken by lazygit below
+new_worktree = "prefix+ctrl+g"
+
+# Popup scratch terminal (tmux: M-t)
+[[keys.command]]
+key = "alt+t"
+type = "popup"
+command = "zsh -l"
+width = "80%"
+height = "80%"
+
+# Lazygit popup (tmux: prefix G)
+[[keys.command]]
+key = "prefix+shift+g"
+type = "popup"
+command = "lazygit"
+width = "80%"
+height = "80%"
