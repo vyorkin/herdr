@@ -47,6 +47,13 @@ resize_pane_down = "prefix+shift+j"
 resize_pane_up = "prefix+shift+k"
 resize_pane_right = "prefix+shift+l"
 
+# Navigate mode (prefix+w): j/k move workspace selection like a list;
+# pane focus inside navigate mode moves to shift+j/k (h/l stay as-is)
+navigate_workspace_down = "j"
+navigate_workspace_up = "k"
+navigate_pane_down = "shift+j"
+navigate_pane_up = "shift+k"
+
 # prefix+shift+g is taken by lazygit below
 new_worktree = "prefix+ctrl+g"
 
