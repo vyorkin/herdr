@@ -6,12 +6,31 @@ My [herdr](https://herdr.dev) config, tuned to feel like my [tmux.conf](https://
 
 ```sh
 git clone https://github.com/vyorkin/herdr.git ~/projects/personal/herdr
+```
+
+**macOS** — symlink the config directly:
+
+```sh
 mkdir -p ~/.config/herdr
 ln -sf ~/projects/personal/herdr/config.toml ~/.config/herdr/config.toml
 herdr config check
 ```
 
-Only `config.toml` is symlinked: `~/.config/herdr` also holds runtime state (logs, sockets, `session.json`).
+**Linux (Omarchy)** — install the theme hook, which writes the effective config:
+
+```sh
+mkdir -p ~/.config/omarchy/hooks/theme-set.d ~/.config/omarchy/hooks/post-boot.d
+ln -sf ~/projects/personal/herdr/omarchy/herdr-theme.sh ~/.config/omarchy/hooks/theme-set.d/herdr
+ln -sf ~/projects/personal/herdr/omarchy/herdr-theme.sh ~/.config/omarchy/hooks/post-boot.d/herdr
+~/.config/omarchy/hooks/theme-set.d/herdr
+herdr config check
+```
+
+Herdr has no config include, so on Linux the hook renders
+`~/.config/herdr/config.toml` from `config.toml` plus a `[theme.custom]` block
+derived from the active Omarchy theme, then reloads the running server. Re-run
+the hook after editing `config.toml` (any `omarchy theme set` does it too). On
+macOS nothing is generated: the file stays a plain symlink.
 
 ## Key bindings
 
@@ -37,9 +56,9 @@ Prefix is `Ctrl+Space`.
 
 One config file targets both macOS and Linux:
 
-- `theme.auto_switch` follows the host terminal's light/dark report, so it works
-  on macOS and on Linux terminals that report `color-scheme` (foot, Ghostty,
-  kitty, ...). Terminals without that support keep the dark `catppuccin` theme.
+- The base `theme.auto_switch` follows the host terminal's light/dark report, so
+  it works on macOS and on Linux terminals that report `color-scheme` (foot,
+  Ghostty, kitty, ...). Terminals without that support keep `catppuccin`.
 - The `Alt + t` scratch popup runs `exec "${SHELL:-sh}" -l`, i.e. your login
   shell on either OS (zsh on macOS, whatever `$SHELL` is on Linux).
 - `terminal.shell_mode = "auto"` starts login shells on macOS and non-login
@@ -48,5 +67,13 @@ One config file targets both macOS and Linux:
 - The `prefix + G` popup requires `lazygit` on `PATH` (Homebrew on macOS, the
   distro package on Linux).
 
-Theme follows the host terminal's light/dark appearance: `catppuccin` /
-`catppuccin-latte`.
+## Theme
+
+The base config uses `catppuccin` with `theme.auto_switch`, so the UI follows the
+host terminal's light/dark report on macOS and on Linux terminals that report
+`color-scheme`.
+
+On Linux/Omarchy the `theme-set` hook additionally layers a `[theme.custom]`
+block rendered from the active Omarchy `colors.toml`, so Herdr matches the
+desktop theme instead of Catppuccin. It regenerates on every `omarchy theme set`
+and at login (`post-boot`).
