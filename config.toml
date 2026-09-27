@@ -5,10 +5,19 @@ delivery = "herdr"
 
 [theme]
 name = "catppuccin"
-# Follow macOS light/dark appearance (like tmux-dark-notify)
+# Follow the host terminal's light/dark appearance and switch Herdr's UI to
+# match. Works both on macOS and on Linux terminals that report color-scheme
+# (foot, Ghostty, kitty, ...), so this one config fits either OS. Terminals
+# without light/dark reporting simply keep "catppuccin".
 auto_switch = true
 dark_name = "catppuccin"
 light_name = "catppuccin-latte"
+
+[terminal]
+# "auto" starts login shells on macOS and keeps the platform default elsewhere,
+# which is what each OS expects. default_shell stays unset so new panes use
+# $SHELL (zsh on macOS, the user's login shell on Linux).
+shell_mode = "auto"
 
 [keys]
 # Same prefix as tmux
@@ -57,15 +66,17 @@ navigate_pane_up = "shift+k"
 # prefix+shift+g is taken by lazygit below
 new_worktree = "prefix+ctrl+g"
 
-# Popup scratch terminal (tmux: M-t)
+# Popup scratch terminal (tmux: M-t). Use the platform login shell rather than
+# a hardcoded "zsh -l", so the binding works on macOS (zsh) and Linux ($SHELL).
 [[keys.command]]
 key = "alt+t"
 type = "popup"
-command = "zsh -l"
+command = "exec \"${SHELL:-sh}\" -l"
 width = "80%"
 height = "80%"
 
-# Lazygit popup (tmux: prefix G)
+# Lazygit popup (tmux: prefix G). Requires lazygit on PATH on both OSes
+# (Homebrew on macOS, the distro package on Linux).
 [[keys.command]]
 key = "prefix+shift+g"
 type = "popup"

@@ -1,6 +1,6 @@
 # herdr
 
-My [herdr](https://herdr.dev) config, tuned to feel like my [tmux.conf](https://github.com/vyorkin/tmux.conf).
+My [herdr](https://herdr.dev) config, tuned to feel like my [tmux.conf](https://github.com/vyorkin/tmux.conf). A single `config.toml` works on both macOS and Linux.
 
 ## Setup
 
@@ -31,6 +31,22 @@ Prefix is `Ctrl+Space`.
 | `prefix + G` | Lazygit popup |
 | `Alt + h/j/k/l` | Focus pane |
 | `Alt + p / n` | Previous / next tab |
-| `Alt + t` | Scratch shell popup |
+| `Alt + t` | Scratch shell popup (`$SHELL -l`) |
 
-Theme follows macOS appearance: `catppuccin` / `catppuccin-latte`.
+## Platform notes
+
+One config file targets both macOS and Linux:
+
+- `theme.auto_switch` follows the host terminal's light/dark report, so it works
+  on macOS and on Linux terminals that report `color-scheme` (foot, Ghostty,
+  kitty, ...). Terminals without that support keep the dark `catppuccin` theme.
+- The `Alt + t` scratch popup runs `exec "${SHELL:-sh}" -l`, i.e. your login
+  shell on either OS (zsh on macOS, whatever `$SHELL` is on Linux).
+- `terminal.shell_mode = "auto"` starts login shells on macOS and non-login
+  shells elsewhere, matching each platform's convention. `terminal.default_shell`
+  is left unset so new panes use `$SHELL`.
+- The `prefix + G` popup requires `lazygit` on `PATH` (Homebrew on macOS, the
+  distro package on Linux).
+
+Theme follows the host terminal's light/dark appearance: `catppuccin` /
+`catppuccin-latte`.
