@@ -51,7 +51,6 @@ set_color dark_bg    "$(color dark_background dark_bg)"
 set_color darker_bg  "$(color darker_background darker_bg)"
 set_color lighter_bg "$(color lighter_background lighter_bg)"
 set_color fg         "$(color foreground fg)"
-set_color muted      "$(color muted dark_foreground)"
 set_color selection  "$(color selection_background selection)"
 set_color accent     "$(color accent color6)"
 set_color red        "$(color red color1)"
@@ -61,6 +60,35 @@ set_color blue       "$(color blue color4)"
 set_color magenta    "$(color magenta color5)"
 set_color cyan       "$(color cyan color6)"
 set_color orange     "$(color orange bright_yellow)"
+
+# Omarchy's own TUI themes (pi.json, claude.json, t3code.json, shell.toml)
+# derive secondary text and the active sidebar row with the template engine's
+# `mix` helper, so every app keeps the same contrast. Herdr's `muted` slot is
+# the bright-black ANSI colour, which on dark themes such as amberbyte
+# (#2b1818 on a #1b1112 background) reads as invisible text, so derive the
+# same shades the rest of the desktop uses instead of trusting `muted`.
+mix() {
+  local h1=${1#'#'} h2=${2#'#'} pct=$3
+  local r1=$((16#${h1:0:2})) g1=$((16#${h1:2:2})) b1=$((16#${h1:4:2}))
+  local r2=$((16#${h2:0:2})) g2=$((16#${h2:2:2})) b2=$((16#${h2:4:2}))
+  printf '#%02x%02x%02x' \
+    $(((r1 * (100 - pct) + r2 * pct + 50) / 100)) \
+    $(((g1 * (100 - pct) + g2 * pct + 50) / 100)) \
+    $(((b1 * (100 - pct) + b2 * pct + 50) / 100))
+}
+
+dim_text=""
+mid_text=""
+muted_text=""
+active_row=""
+if is_color "$fg" && is_color "$bg"; then
+  dim_text="$(mix "$fg" "$bg" 52)"
+  mid_text="$(mix "$fg" "$bg" 45)"
+  muted_text="$(mix "$fg" "$bg" 34)"
+fi
+if is_color "$bg" && is_color "$accent"; then
+  active_row="$(mix "$bg" "$accent" 18)"
+fi
 
 # Emit one token, skipping it when its color could not be resolved.
 token() {
@@ -74,15 +102,15 @@ theme_custom="$(
   {
     token sidebar_bg    "$bg"
     token panel_bg      "$bg"
-    token active_row_bg "$dark_bg"
+    token active_row_bg "$active_row"
     token selection_bg  "$selection"
     token surface_dim   "$darker_bg"
     token surface0      "$dark_bg"
     token surface1      "$lighter_bg"
-    token overlay0      "$muted"
-    token overlay1      "$muted"
+    token overlay0      "$dim_text"
+    token overlay1      "$mid_text"
     token text          "$fg"
-    token subtext0      "$muted"
+    token subtext0      "$muted_text"
     token accent        "$accent"
     token red           "$red"
     token green         "$green"
