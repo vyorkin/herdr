@@ -1,0 +1,9 @@
+[Unit]
+Description=Apply the active Omarchy theme to Herdr
+
+[Service]
+Type=oneshot
+# The same hook `omarchy theme set` runs at the end of its sequence. The hook
+# is idempotent, so running it here and again there only rewrites and reloads
+# Herdr when the generated config actually changed.
+ExecStart=%h/.config/omarchy/hooks/theme-set.d/herdr

@@ -1,0 +1,15 @@
+[Unit]
+Description=Watch the active Omarchy theme for Herdr
+
+[Path]
+# `omarchy theme set` writes this file right after it swaps in the new palette
+# and pushes it to the running shell, before the slower app-retint commands and
+# the theme-set hooks run. Herdr's own hook runs at the very end of that
+# sequence, which is why the sidebar used to repaint a couple of seconds after
+# the rest of the desktop. Watching the file applies the new palette as soon as
+# it exists instead.
+PathModified=%h/.local/state/omarchy/current/theme.name
+Unit=herdr-theme.service
+
+[Install]
+WantedBy=default.target

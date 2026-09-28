@@ -26,6 +26,24 @@ ln -sf ~/projects/personal/herdr/omarchy/herdr-theme.sh ~/.config/omarchy/hooks/
 herdr config check
 ```
 
+`omarchy theme set` runs its theme-set hooks at the very end of the sequence,
+seconds after it swaps in the new palette and pushes it to the running shell, so
+Herdr used to repaint well after the rest of the desktop. Install the `herdr-theme.path`
+unit to apply the palette as soon as Omarchy writes it:
+
+```sh
+mkdir -p ~/.config/systemd/user
+ln -sf ~/projects/personal/herdr/omarchy/herdr-theme.path ~/.config/systemd/user/herdr-theme.path
+ln -sf ~/projects/personal/herdr/omarchy/herdr-theme.service ~/.config/systemd/user/herdr-theme.service
+systemctl --user daemon-reload
+systemctl --user enable --now herdr-theme.path
+```
+
+The path unit watches `~/.local/state/omarchy/current/theme.name` and runs the
+same hook, so Herdr follows the switch in a few hundred milliseconds. The hook
+skips the rewrite and reload when the generated config is unchanged, so the
+later theme-set run does not repaint the client a second time.
+
 Herdr has no config include, so on Linux the hook renders
 `~/.config/herdr/config.toml` from `config.toml` plus a `[theme.custom]` block
 derived from the active Omarchy theme, then reloads the running server. Re-run

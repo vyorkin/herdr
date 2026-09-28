@@ -193,6 +193,15 @@ strip_theme_custom "$BASE_CONFIG" >"$tmp"
 } >>"$tmp"
 
 chmod 0644 "$tmp"
+
+# Skip the write and the reload when the generated config is already current.
+# `omarchy theme set` runs this hook at the very end of its sequence, while the
+# herdr-theme.path unit applies the palette right after Omarchy swaps it in; the
+# guard keeps the second run from repainting the client again.
+if cmp -s "$tmp" "$DEST"; then
+  exit 0
+fi
+
 mv -f -- "$tmp" "$DEST"
 trap - EXIT
 
