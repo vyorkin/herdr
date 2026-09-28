@@ -90,36 +90,84 @@ if is_color "$bg" && is_color "$accent"; then
   active_row="$(mix "$bg" "$accent" 18)"
 fi
 
-# Emit one token, skipping it when its color could not be resolved.
-token() {
-  local key="$1" value="$2"
-  if [[ -n $value ]]; then
-    printf '%s = "%s"\n' "$key" "$value"
-  fi
+# Read "key<TAB>value" pairs from the [table] of a TOML file, stopping at the
+# next table header. Surrounding quotes are stripped; booleans and numbers
+# come through bare.
+table_entries() {
+  awk -v want="[$2]" '
+    $0 == want { inside = 1; next }
+    inside && /^\[/ { exit }
+    inside && /^[[:space:]]*[A-Za-z0-9_.-]+[[:space:]]*=/ {
+      line = $0
+      sub(/[[:space:]]+#.*/, "", line)
+      pos = index(line, "=")
+      key = substr(line, 1, pos - 1)
+      value = substr(line, pos + 1)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", key)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      gsub(/^"|"$/, "", value)
+      print key "\t" value
+    }
+  ' "$1"
 }
 
+# Herdr exposes a fixed set of color tokens; keep a stable order and ignore
+# anything else a theme's declarative file might carry.
+custom_keys=(
+  sidebar_bg panel_bg active_row_bg selection_bg surface_dim surface0 surface1
+  overlay0 overlay1 text subtext0 accent red green yellow blue teal mauve peach
+)
+declare -A custom=()
+add_color() { if [[ -n $2 ]]; then custom["$1"]="$2"; fi; }
+
+add_color sidebar_bg    "$bg"
+add_color panel_bg      "$bg"
+add_color active_row_bg "$active_row"
+add_color selection_bg  "$selection"
+add_color surface_dim   "$darker_bg"
+add_color surface0      "$dark_bg"
+add_color surface1      "$lighter_bg"
+add_color overlay0      "$dim_text"
+add_color overlay1      "$mid_text"
+add_color text          "$fg"
+add_color subtext0      "$muted_text"
+add_color accent        "$accent"
+add_color red           "$red"
+add_color green         "$green"
+add_color yellow        "$yellow"
+add_color blue          "$blue"
+add_color teal          "$cyan"
+add_color mauve         "$magenta"
+add_color peach         "$orange"
+
+# A theme may ship a declarative colors-herdr.toml (schema = 1) with the
+# [theme] / [theme.custom] block the Omarchy theme convention standardises
+# (basecamp/omarchy#8011); `omarchy theme set` copies it into the staged theme
+# dir. Prefer its color tokens over the generic palette derivation above.
+# Only [theme.custom] is applied: the [theme] block names app-side themes such
+# as "noir", which are not Herdr built-ins and would only make `herdr config
+# check` complain, while the color override already replaces the base palette.
+declarative=""
+for candidate in \
+  "$OMARCHY_STATE/theme/colors-herdr.toml" \
+  "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/themes/$THEME_NAME/colors-herdr.toml" \
+  "/usr/share/omarchy/themes/$THEME_NAME/colors-herdr.toml"; do
+  if [[ -f $candidate ]]; then declarative="$candidate"; break; fi
+done
+
+if [[ -n $declarative ]]; then
+  while IFS=$'\t' read -r key value; do
+    [[ -n ${custom[$key]+x} ]] || continue
+    if [[ -n $value ]]; then custom["$key"]="$value"; fi
+  done < <(table_entries "$declarative" theme.custom)
+fi
+
 theme_custom="$(
-  {
-    token sidebar_bg    "$bg"
-    token panel_bg      "$bg"
-    token active_row_bg "$active_row"
-    token selection_bg  "$selection"
-    token surface_dim   "$darker_bg"
-    token surface0      "$dark_bg"
-    token surface1      "$lighter_bg"
-    token overlay0      "$dim_text"
-    token overlay1      "$mid_text"
-    token text          "$fg"
-    token subtext0      "$muted_text"
-    token accent        "$accent"
-    token red           "$red"
-    token green         "$green"
-    token yellow        "$yellow"
-    token blue          "$blue"
-    token teal          "$cyan"
-    token mauve         "$magenta"
-    token peach         "$orange"
-  }
+  for key in "${custom_keys[@]}"; do
+    if [[ -n ${custom[$key]:-} ]]; then
+      printf '%s = "%s"\n' "$key" "${custom[$key]}"
+    fi
+  done
 )"
 
 # Drop any [theme.custom] the base file may carry, so we never emit it twice.

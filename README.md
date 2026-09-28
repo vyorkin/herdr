@@ -77,3 +77,12 @@ On Linux/Omarchy the `theme-set` hook additionally layers a `[theme.custom]`
 block rendered from the active Omarchy `colors.toml`, so Herdr matches the
 desktop theme instead of Catppuccin. It regenerates on every `omarchy theme set`
 and at login (`post-boot`).
+
+Secondary text (`overlay0`/`overlay1`/`subtext0`) and the active sidebar row are
+derived with the same `mix` helper Omarchy uses for its own TUI themes
+(`pi.json`, `claude.json`, `t3code.json`, `shell.toml`), because the theme's
+`muted` slot is the bright-black ANSI colour and can sit too close to the
+background to read. If a theme ships a declarative `colors-herdr.toml`
+(`schema = 1`, the `colors-<app>.toml` convention behind
+[basecamp/omarchy#8011](https://github.com/basecamp/omarchy/pull/8011)), its
+`[theme.custom]` block takes precedence over the derived palette.
